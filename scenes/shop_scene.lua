@@ -53,7 +53,10 @@ function ShopScene:keypressed(key)
             local choice = tonumber(key)
             if choice and self.items[choice] then
                 local item = self.items[choice]
-                local success, msg = Shop.ProcessPurchase(Game.player, self.submode, item.id, item.price)
+                local success, msg = false, "Item is sold out."
+                if not item.soldOut then
+                    success, msg = Shop.ProcessPurchase(Game.player, self.submode, item.id, item.price)
+                end
                 self.message = msg
             end
         end

@@ -1,3 +1,5 @@
+local Player = require("entities.player")
+
 local SaveSystem = {}
 
 local function Path(slot)
@@ -40,7 +42,10 @@ end
 
 function SaveSystem.Save(slot, player)
     love.filesystem.createDirectory("saves")
-    local dataString = "return " .. Serialize(player)
+    local snapshot = {}
+    for k, v in pairs(player) do snapshot[k] = v end
+    for _, field in ipairs(Player.TRANSIENT_FIELDS) do snapshot[field] = nil end
+    local dataString = "return " .. Serialize(snapshot)
     love.filesystem.write(Path(slot), dataString)
 end
 

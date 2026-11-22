@@ -26,7 +26,13 @@ local PotionsData = {
     health_maxxer = {
         id = "health_maxxer",
         name = "Health Maxxer",
-        description = "+25 Max HP permanently.",
+        description = "Expands your current max HP",
+        price = 1000
+    },
+    mana_maxxer = {
+        id = "mana_maxxer",
+        name = "Mana Maxxer",
+        description = "Expands your max Mana",
         price = 1000
     }
 }

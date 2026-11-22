@@ -41,9 +41,16 @@ function PotionSystem.Use(player, potionId)
         message = "Restored " .. gain .. " Mana."
         
     elseif potionId == "health_maxxer" then
+        player.baseHp = (player.baseHp or player.maxHp) + 25
         player.maxHp = player.maxHp + 25
-        player.hp = player.hp + 25 -- Heal the new amount as a bonus
-        message = "Your life force expands."
+        player.hp = player.hp + 25
+        message = "Maximum HP increased by 25 for this run."
+
+    elseif potionId == "mana_maxxer" then
+        player.baseMana = (player.baseMana or player.maxMana) + 25
+        player.maxMana = player.maxMana + 25
+        player.mana = player.mana + 25
+        message = "Maximum Mana increased by 25 for this run."
     end
 
     -- Deduct from inventory

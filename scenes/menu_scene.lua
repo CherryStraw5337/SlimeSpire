@@ -13,7 +13,7 @@ end
 function MenuScene:keypressed(key)
     if key == "1" then
         -- Enter Combat
-        local enemy = Enemy.Random(Game.player.wave)
+        local enemy = Enemy.Random(Game.player.wave, Game.player)
         local combatState = Combat.CreateState(Game.player, enemy)
         GameState.StartCombat(Game.state, combatState)
         Game.sceneManager:Switch("combat")
@@ -30,6 +30,11 @@ function MenuScene:keypressed(key)
         -- Save and Quit
         SaveSystem.Save(Game.currentSaveSlot, Game.player)
         love.event.quit()
+
+    elseif key == "5" then
+        -- Return to save slot selection
+        SaveSystem.Save(Game.currentSaveSlot, Game.player)
+        Game.sceneManager:Switch("save")
     end
 end
 

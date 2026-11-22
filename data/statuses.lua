@@ -1,140 +1,119 @@
 local Status = {}
 
+local function ApplyTimed(target, type, duration, power, source)
+    target.statuses = target.statuses or {}
+    target.statusImmunity = target.statusImmunity or {}
+    if target.statuses[type] or (target.statusImmunity[type] or 0) > 0 then
+        return false
+    end
+    local status = {
+        type = type,
+        duration = duration,
+        power = power,
+        source = source,
+        appliedTurn = true
+    }
+    target.statuses[type] = status
+    target.status = status
+    return true
+end
+
+local function TickDamage(target)
+    local status = target.status
+    if not status then return 0 end
+    local damage = math.floor((target.maxHp or 100) * (status.power or 0.10))
+    target.hp = math.max(0, target.hp - damage)
+    status.duration = status.duration - 1
+    if status.duration <= 0 then
+        target.statuses = target.statuses or {}
+        target.statuses[status.type] = nil
+        target.statusImmunity = target.statusImmunity or {}
+        target.statusImmunity[status.type] = 1
+        if target.status and target.status.type == status.type then target.status = nil end
+        target.frostbited = nil
+    end
+    return damage
+end
+
 Status.List = {
     burn = {
         id = "burn", name = "Burn", description = "Takes damage over time from fire.",
-        apply = function(enemy, player, power)
-            enemy.status = { type = "burn", duration = 3, power = power }
-            player.status = { type = "burn", duration = 3, power = power }
+        apply = function(target, power)
+            return ApplyTimed(target, "burn", 3, power or 0.10)
         end,
-        tick = function(enemy, player)
-            local burnDamageEnemy = math.floor((enemy.maxHp or 100) * (enemy.status.power or 0.10))
-            local burnDamagePlayer = math.floor((player.maxHp or 100) * (player.status.power or 0.10))
-            enemy.hp = math.max(0, enemy.hp - burnDamageEnemy)
-            player.hp = math.max(0, player.hp - burnDamagePlayer)
-            local enemyDuration = enemy.status.duration - 1
-            local playerDuration = player.status.duration - 1
-            if playerDuration <= 0 then
-                player.status = nil
-            else
-                player.status.duration = playerDuration
-            end
-            if enemyDuration <= 0 then
-                enemy.status = nil
-            else
-                enemy.status.duration = enemyDuration
-            end
-            return burnDamageEnemy, burnDamagePlayer
+        tick = function(target)
+            return TickDamage(target)
         end
     },
     scorch = {
         id = "scorch", name = "Scorch", description = "Takes heavy damage over a short time.",
-        apply = function(enemy, power)
-            enemy.status = { type = "scorch", duration = 5, power = power }
+        apply = function(target, power)
+            return ApplyTimed(target, "scorch", 5, power or 0.25)
         end,
-        tick = function(enemy)
-            local scorchDamage = math.floor((enemy.maxHp or 100) * (enemy.status.power or 0.25))
-            enemy.hp = math.max(0, enemy.hp - scorchDamage)
-            local duration = enemy.status.duration - 1
-            if duration <= 0 then
-                enemy.status = nil
-            else
-                enemy.status.duration = duration
-            end
-            return scorchDamage
+        tick = function(target)
+            return TickDamage(target)
         end
     },
     paralysis = {
         id = "paralysis", name = "Paralysis", description = "Cannot act for a turn.",
-        apply = function(enemy)
-            enemy.paralyzed = true
+        apply = function(target)
+            target.paralyzed = true
         end,
-        tick = function(enemy)
+        tick = function()
             -- Paralysis effect is handled in the combat system; no damage over time.
             return 0
         end
     },
     rooted = {
         id = "rooted", name = "Rooted", description = "Takes damage over time. Chance to avoid movement.",
-        apply = function(enemy, power)
-            enemy.status = { type = "rooted", duration = 5, power = power, atkchance = 1 }
+        apply = function(target, power)
+            if not ApplyTimed(target, "rooted", 5, power or 0.15) then return false end
+            target.status.skipChance = 0.25
+            return true
         end,
-        tick = function(enemy)
-            local rootDamage = math.floor((enemy.maxHp or 100) * (enemy.status.power or 0.15))
-            enemy.hp = math.max(0, enemy.hp - rootDamage)
-
-            local duration = enemy.status.duration - 1
-            if duration <= 0 then
-                enemy.status = nil
-            else
-                enemy.status.duration = duration
-            end
-            return 0
+        tick = function(target)
+            return TickDamage(target)
         end
     },
     hail = {
         id = "hail", name = "Hail", description = "Ice shards rain down, dealing damage over time.",
-        apply = function(enemy, player, power)
-            enemy.status = { type = "hail", duration = 8, power = power }
-            player.status = { type = "hail", duration = 8, power = power }
+        apply = function(target, power)
+            return ApplyTimed(target, "hail", 8, power or 0.20)
         end,
-        tick = function(enemy, player)
-            local hailDamageEnemy = math.floor((enemy.maxHp or 100) * (enemy.status.power or 0.20))
-            enemy.hp = math.max(0, enemy.hp - hailDamageEnemy)
-            local hailDamagePlayer = math.floor((player.maxHp or 100) * (player.status.power or 0.10))
-            player.hp = math.max(0, player.hp - hailDamagePlayer)
-            local enemyDuration = enemy.status.duration - 1
-            local playerDuration = player.status.duration - 1
-            if enemyDuration <= 0 then
-                enemy.status = nil
-            else
-                enemy.status.duration = enemyDuration
-            end
-            if playerDuration <= 0 then
-                player.status = nil
-            else
-                player.status.duration = playerDuration
-            end
-            return hailDamageEnemy, hailDamagePlayer
+        tick = function(target)
+            return TickDamage(target)
         end
     },
     flower = {
         id = "flower", name = "Flower", description = "A parasitic blossom drains life over time.",
-        apply = function(enemy, player, power)
-            enemy.status = { type = "flower", duration = -1, power = power }
-            player.status = { type = "flower", duration = -1, power = power }
+        apply = function(target, power, source)
+            return ApplyTimed(target, "flower", -1, power or 0.05, source)
         end,
-        tick = function(enemy, player)
-            local flowerDamageEnemy = math.floor((enemy.maxHp or 100) * (enemy.status.power or 0.05))
-            enemy.hp = math.max(0, enemy.hp - flowerDamageEnemy)
-            local flowerHealPlayer = math.floor((player.maxHp or 100) * (player.status.power or 0.05))
-            player.hp = math.max(0, player.hp + flowerHealPlayer)
-            return flowerDamageEnemy, flowerHealPlayer
+        tick = function(target)
+            local status = target.status
+            local damage = math.floor((target.maxHp or 100) * (status.power or 0.05))
+            target.hp = math.max(0, target.hp - damage)
+            if status.source then
+                status.source.hp = math.min(status.source.maxHp, status.source.hp + damage)
+            end
+            return damage
         end
     },
     frostbite = {
         id = "frostbite", name = "Frostbite", description = "Takes damage over time and has a chance to stop movement.",
-        apply = function(enemy, player, power)
-            player.status = { type = "frostbite", duration = 5, power = power }
+        apply = function(target, power)
+            return ApplyTimed(target, "frostbite", 5, power or 0.10)
         end,
-        tick = function(player)
-            local frostbiteDamagePlayer = math.floor((player.maxHp or 100) * (player.status.power or 0.10))
-            player.hp = math.max(0, player.hp - frostbiteDamagePlayer)
-
-            if math.random(1, 100) <= 10 then 
-                player.status.id.frostbite = true
+        tick = function(target)
+            local damage = TickDamage(target)
+            if target.status and target.status.type == "frostbite" then
+                target.frostbited = math.random(1, 100) <= 10
             end
-
-            local playerDuration = player.status.duration - 1
-            if playerDuration <= 0 then
-                player.status = nil
-            else
-                player.status.duration = playerDuration
-            end
-
-            return frostbiteDamagePlayer
+            return damage
         end
     }
 }
 
 function Status.Get(id) return Status.List[id] end
+
+return Status

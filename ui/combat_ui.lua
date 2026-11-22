@@ -12,13 +12,24 @@ function CombatUI.Render(state)
     love.graphics.print("=== COMBAT ===", 50, y); y = y + (spacing * 2)
     
     local enemyStatus = ""
-    if enemy.paralyzed then enemyStatus = enemyStatus .. " [PARALYZED]" end
-    if enemy.status then enemyStatus = enemyStatus .. " [" .. string.upper(enemy.status.type) .. "]" end
+    if enemy.paralyzed and enemy.paralyzedTurn == state.turn then enemyStatus = enemyStatus .. " [PARALYZED]" end
+    for _, status in pairs(enemy.statuses or {}) do
+        if status.appliedTurn == state.turn then
+            enemyStatus = enemyStatus .. " [" .. string.upper(status.type) .. "]"
+        end
+    end
+    local playerStatus = player.paralyzed and player.paralyzedTurn == state.turn and " [PARALYZED]" or ""
+    for _, status in pairs(player.statuses or {}) do
+        if status.appliedTurn == state.turn then
+            playerStatus = playerStatus .. " [" .. string.upper(status.type) .. "]"
+        end
+    end
     
     love.graphics.print(enemy.name .. " (HP: " .. enemy.hp .. " / " .. enemy.maxHp .. ")" .. enemyStatus, 50, y); y = y + (spacing * 2)
     love.graphics.print("   vs   ", 50, y); y = y + (spacing * 2)
     
-    love.graphics.print(player.name .. " (Level " .. player.level .. ")", 50, y); y = y + spacing
+    love.graphics.print(player.name .. playerStatus, 50, y); y = y + spacing
+    love.graphics.print("Level: " .. player.level, 50, y); y = y + spacing
     love.graphics.print("HP: " .. player.hp .. " / " .. player.maxHp, 50, y); y = y + spacing
     love.graphics.print("Mana: " .. player.mana .. " / " .. player.maxMana, 50, y); y = y + (spacing * 2)
     
@@ -36,14 +47,29 @@ function CombatUI.Render(state)
         local text = ""
         
         if ev.type == "PLAYER_ATTACK" then
-            text = "You dealt " .. ev.data.damage .. " DMG!"
+            text = "PLAYER: You dealt " .. ev.data.damage .. " DMG!"
             if ev.data.critical then text = text .. " (CRITICAL!)" end
         elseif ev.type == "ENEMY_ATTACK" then
-            text = ev.data.attacker .. " hits you for " .. ev.data.damage .. " DMG!"
+            text = "SLIME: " .. ev.data.attacker .. " hits you for " .. ev.data.damage .. " DMG!"
             
         -- THE FIX: Now shows the damage number AND the custom spell text on the same line
         elseif ev.type == "SPELL_CAST" then
-            text = ev.data.spell .. " dealt " .. ev.data.damage .. " DMG! " .. (ev.data.text or "")
+            if ev.data.healing and ev.data.damage > 0 then
+                text = ev.data.spell .. " dealt " .. ev.data.damage .. " DMG and restored " .. ev.data.healing .. " HP. " .. (ev.data.text or "")
+            elseif ev.data.healing then
+                text = ev.data.spell .. " restored " .. ev.data.healing .. " HP. " .. (ev.data.text or "")
+            else
+                text = ev.data.spell .. " dealt " .. ev.data.damage .. " DMG! " .. (ev.data.text or "")
+            end
+            if ev.data.manaSpent then text = text .. " (" .. ev.data.manaSpent .. " mana consumed.)" end
+        elseif ev.type == "STATUS_APPLIED" then
+            text = ev.data.target .. " is affected by " .. ev.data.status .. "."
+        elseif ev.type == "STATUS_TICK" then
+            text = ev.data.target .. " takes " .. ev.data.damage .. " damage from " .. ev.data.status .. "."
+        elseif ev.type == "POTION_USED" then
+            text = "You use " .. ev.data.potion .. ": " .. (ev.data.text or "Potion effect applied.")
+        elseif ev.type == "BUFF_APPLIED" then
+            text = "Buff applied: " .. (ev.data.buff or "Battle buff active.")
             
         elseif ev.type == "TEXT" then
             text = ev.data.text
@@ -64,15 +90,30 @@ function CombatUI.RenderSpells(player)
     local y = 350
     local spacing = 20
     love.graphics.print("--- SPELLBOOK ---", 50, y); y = y + spacing
-    local index = 1
+    local ids = {}
+    local seen = {}
+    for _, id in ipairs(player.spellOrder or {}) do
+        if player.inventory.spells[id] then ids[#ids + 1] = id; seen[id] = true end
+    end
     for id, owned in pairs(player.inventory.spells or {}) do
-        if owned then
-            local spell = Spells.Get(id)
-            if spell then
-                love.graphics.print(index .. ". " .. spell.name .. " (" .. spell.manaCost .. " MP)", 50, y)
-                y = y + spacing
-                index = index + 1
-            end
+        if owned and not seen[id] then table.insert(ids, id) end
+    end
+    table.sort(ids, function(a, b)
+        local indexA, indexB = 0, 0
+        for i, id in ipairs(player.spellOrder or {}) do
+            if id == a then indexA = i end
+            if id == b then indexB = i end
+        end
+        if indexA ~= indexB and indexA > 0 and indexB > 0 then return indexA < indexB end
+        local spellA = Spells.Get(a)
+        local spellB = Spells.Get(b)
+        return (spellA and spellA.name or a) < (spellB and spellB.name or b)
+    end)
+    for index, id in ipairs(ids) do
+        local spell = Spells.Get(id)
+        if spell then
+            love.graphics.print(index .. ". " .. spell.name .. " (" .. spell.manaCost .. " MP)", 50, y)
+            y = y + spacing
         end
     end
     love.graphics.print("0. Cancel", 50, y + spacing)

@@ -52,3 +52,7 @@ luac.out
 # If you want to ignore specific save files, you can add them here. For example:
 # save_data.json
 # config.ini
+
+# =========================
+# Notes for betatesting
+dev/

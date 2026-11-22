@@ -18,30 +18,58 @@ function Progression.OnVictory(player)
         return false
     end
 
-    -- TIER 1: Unlocked after beating your very first run
-    if player.totalWins == 1 and #player.unlockedCharms == 0 then
-        unlock("lucky"); unlock("vampiric"); unlock("magic")
+    -- Tier 1: the first completed run opens all three initial choices.
+    if player.totalWins >= 1 then
+        for _, id in ipairs({ "lucky", "vampiric", "magic" }) do
+            if not has(id) then unlock(id) end
+        end
     end
 
-    -- TIER 2: Unlocked by beating runs with Tier 1
-    if completed["lucky"] and not has("exchange") then unlock("exchange") end
-    if completed["vampiric"] and not has("challenge") then unlock("challenge") end
-    if completed["magic"] and not has("pacifist") then unlock("pacifist") end
-    if completed["vampiric"] and not has("violent") then unlock("violent") end -- Added Violent
+    local function completedAll(ids)
+        for _, id in ipairs(ids) do
+            if not completed[id] then return false end
+        end
+        return true
+    end
 
-    -- TIER 3: Unlocked by beating runs with Tier 2
-    if completed["exchange"] and not has("rouge") then unlock("rouge") end
-    if completed["exchange"] and not has("speed") then unlock("speed") end -- Added Speed
-    if completed["challenge"] and not has("chaos") then unlock("chaos") end
-    if completed["challenge"] and not has("greedy") then unlock("greedy") end -- Added Greedy
-    if completed["pacifist"] and not has("natural") then unlock("natural") end
-    if completed["pacifist"] and not has("calm") then unlock("calm") end
+    -- A tier opens only after one completed run with every charm in the previous tier.
+    local tierOneIds = { "lucky", "vampiric", "magic" }
+    local tierTwoIds = { "exchange", "challenge", "pacifist", "violent" }
+    local wonAnyTierOne = false
+    for _, id in ipairs(tierOneIds) do
+        if completed[id] then wonAnyTierOne = true end
+    end
 
-    -- TIER 4: Unlocked by beating runs with Tier 3
-    if completed["rouge"] and not has("expert") then unlock("expert") end
-    if completed["violent"] and not has("weaponmaster") then unlock("weaponmaster") end -- Mapped Weaponmaster
-    if completed["natural"] and not has("guardian") then unlock("guardian") end
-    if completed["calm"] and not has("master") then unlock("master") end
+    local hasAnyTierTwo = false
+    for _, id in ipairs(tierTwoIds) do
+        if has(id) then hasAnyTierTwo = true end
+    end
+
+    if wonAnyTierOne and not hasAnyTierTwo then
+        local available = {}
+        for _, id in ipairs(tierTwoIds) do
+            if not has(id) then table.insert(available, id) end
+        end
+        if #available > 0 then unlock(available[math.random(#available)]) end
+    end
+
+    if completedAll(tierOneIds) then
+        for _, id in ipairs(tierTwoIds) do
+            if not has(id) then unlock(id) end
+        end
+    end
+
+    if completedAll({ "exchange", "challenge", "pacifist", "violent" }) then
+        for _, id in ipairs({ "rouge", "speed", "greedy", "chaos", "natural", "calm" }) do
+            if not has(id) then unlock(id) end
+        end
+    end
+
+    if completedAll({ "rouge", "speed", "greedy", "chaos", "natural", "calm" }) then
+        for _, id in ipairs({ "expert", "weaponmaster", "guardian", "master" }) do
+            if not has(id) then unlock(id) end
+        end
+    end
 
     -- TIER 5: Insanity (Requires 100 total wins + beating the game with the big T4s)
     if player.totalWins >= 100 and completed["expert"] and completed["weaponmaster"] and completed["guardian"] and completed["master"] and not has("insanity") then
@@ -53,11 +81,14 @@ function Progression.OnLoss(player)
     local meta = {
         unlockedCharms = player.unlockedCharms or {},
         completedCharms = player.completedCharms or {},
+        purchasedShop = player.purchasedShop or { weapon = {}, shield = {}, spell = {} },
         totalWins = player.totalWins or 0,
         run = { victories = 0 }
     }
     local freshState = Player.Create(player.name)
     for k, v in pairs(meta) do freshState[k] = v end
+    -- pairs skips nil fields in freshState, so stale keys must be wiped first.
+    for k in pairs(player) do player[k] = nil end
     for k, v in pairs(freshState) do player[k] = v end
 end
 

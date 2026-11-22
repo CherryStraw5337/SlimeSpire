@@ -17,6 +17,7 @@ function Game.Init()
     Game.sceneManager:Register("shop", require("scenes.shop_scene"))
     Game.sceneManager:Register("combat", require("scenes.combat_scene"))
     Game.sceneManager:Register("gameover", require("scenes.gameover_scene"))
+    Game.sceneManager:Register("victory", require("scenes.victory_scene"))
 
     Game.sceneManager:Switch("save")
 end

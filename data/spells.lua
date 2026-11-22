@@ -20,8 +20,7 @@ Spells.List = {
         cast = function(player, enemy, pushEvent)
             local damage = CalculateDamage(player, enemy, 5)
             enemy.hp = math.max(0, enemy.hp - damage)
-            player.hp = math.min(player.maxHp, player.hp + 5)
-            pushEvent("SPELL_CAST", { spell = "Itchy Pollen", damage = damage, text = "The magical pollen chokes your foe and heals you!" })
+            pushEvent("SPELL_CAST", { spell = "Itchy Pollen", damage = damage, healFromDamage = true, text = "The magical pollen chokes your foe." })
         end
     },
     fire_ball = {
@@ -40,10 +39,9 @@ Spells.List = {
         cast = function(player, enemy, pushEvent)
             local hits = math.random(1, 10)
             local totalDamage = 0
-            for count = 1, hits do 
-                totalDamage = totalDamage + CalculateDamage(player, enemy, 15) 
-                count = count + 1
-                end
+            for count = 1, hits do
+                totalDamage = totalDamage + CalculateDamage(player, enemy, 15)
+            end
             enemy.hp = math.max(0, enemy.hp - totalDamage)
             pushEvent("SPELL_CAST", { spell = "Icicle Rush", damage = totalDamage, text = hits .. " ice shards puncture your enemy!" })
         end
@@ -60,9 +58,11 @@ Spells.List = {
     leafy_brew = {
         id = "leafy_brew", name = "Leafy Brew", manaCost = 25, price = 500,
         flavour = "A swirl of rejuvenating leaves envelops you.",
-        cast = function(player, pushEvent)
+        cast = function(player, enemy, pushEvent)
+            local previousHp = player.hp
             player.hp = math.min(player.maxHp, player.hp + 20)
-            pushEvent("SPELL_CAST", { spell = "Leafy Brew", damage = 0, text = "The glowing leaves mend your wounds." })
+            local healing = player.hp - previousHp
+            pushEvent("SPELL_CAST", { spell = "Leafy Brew", damage = 0, healing = healing, text = "The glowing leaves mend your wounds." })
         end
     },
     zappy_touch = {
@@ -91,9 +91,9 @@ Spells.List = {
         cast = function(player, enemy, pushEvent)
             local damage = CalculateDamage(player, enemy, 30)
             enemy.hp = math.max(0, enemy.hp - damage)
-            player.def = (player.def or 1) + 15
+            player.icebergShieldHp = (player.icebergShieldHp or 0) + ((player.level or 1) * 50)
             pushEvent("SPELL_CAST", { spell = "Iceberg Crush", damage = damage, text = "The shattered ice forms a protective barrier around you." })
-            pushEvent("BUFF_APPLIED", { buff = "Defense +15" })
+            pushEvent("BUFF_APPLIED", { buff = "Ice shield HP +" .. ((player.level or 1) * 50) })
         end
     },
     spiky_cannon = {
@@ -108,7 +108,7 @@ Spells.List = {
     rooted_beating = {
         id = "rooted_beating", name = "Rooted Beating", manaCost = 15, price = 1800,
         flavour = "Vines erupt from the earth, tightly binding your foe.",
-        cast = function(enemy, pushEvent)
+        cast = function(player, enemy, pushEvent)
             pushEvent("SPELL_CAST", { spell = "Rooted Beating", damage = 0, text = "Living roots drag them into the dirt!" })
             pushEvent("STATUS_APPLIED", { enemy = enemy.name, status = "Rooted" })
         end
@@ -141,6 +141,7 @@ Spells.List = {
             local damage = CalculateDamage(player, enemy, 70)
             enemy.hp = math.max(0, enemy.hp - damage)
             pushEvent("SPELL_CAST", { spell = "Frozen Barrage", damage = damage, text = "A violent blizzard engulfs the enemy." })
+            pushEvent("STATUS_APPLIED", { enemy = enemy.name, status = "hail", power = 0.10 })
         end
     },
     meteor_impact = {
@@ -159,6 +160,7 @@ Spells.List = {
             local damage = CalculateDamage(player, enemy, 60)
             enemy.hp = math.max(0, enemy.hp - damage)
             pushEvent("SPELL_CAST", { spell = "Sundowmer Bloom", damage = damage, text = "The parasitic blossom takes root in their soul." })
+            pushEvent("STATUS_APPLIED", { enemy = enemy.name, status = "flower", power = 0.05 })
         end
     },
     thunderous_roaring = {
@@ -171,14 +173,16 @@ Spells.List = {
         end
     },
     superior_mana_blast = {
-        id = "superior_mana_blast", name = "Superior Mana Blast", manaCost = 0, price = 25000, legendary = true,
-        flavour = "You channel every ounce of your magical essence into pure destruction.",
+        id = "superior_mana_blast", name = "Superior Mana Blast", manaCost = 0, minMana = 301, price = 25000, legendary = true,
+        flavour = "You channel your battle-weary magic into pure destruction.",
         cast = function(player, enemy, pushEvent)
             local drainedMana = player.mana
+            local spellCount = player.battleSpellCount or 0
+            local damage = (100 * spellCount) + (10 * (player.level or 1)) - drainedMana
+            damage = math.max(0, damage)
             player.mana = 0
-            local damage = CalculateDamage(player, enemy, drainedMana * 5)
             enemy.hp = math.max(0, enemy.hp - damage)
-            pushEvent("SPELL_CAST", { spell = "Superior Mana Blast", damage = damage, text = "A blinding beam of absolute magic obliterates reality itself!" })
+            pushEvent("SPELL_CAST", { spell = "Superior Mana Blast", damage = damage, manaSpent = drainedMana, text = "A blinding beam of absolute magic obliterates reality itself!" })
         end
     }
 }
