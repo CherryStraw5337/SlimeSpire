@@ -16,7 +16,7 @@ function InventoryUI.RenderCategory(title, items, page)
     local y = 50
     local spacing = 20
     love.graphics.print("--- " .. string.upper(title) .. " ---", 50, y); y = y + spacing * 2
-    
+
     if #items == 0 then
         love.graphics.print("Empty.", 50, y); y = y + spacing
     else
@@ -42,7 +42,7 @@ function InventoryUI.RenderPotions(potionsList, message, page)
     local y = 50
     local spacing = 20
     love.graphics.print("--- POTIONS ---", 50, y); y = y + spacing * 2
-    
+
     if #potionsList == 0 then
         love.graphics.print("None.", 50, y); y = y + spacing
     else
@@ -68,7 +68,7 @@ function InventoryUI.RenderSpells(spells, page)
         local spell = spells[i]        love.graphics.print(i .. ". " .. spell.name .. " (" .. spell.manaCost .. " MP)", 50, y); y = y + 20
         love.graphics.print("   " .. (spell.description or "No description."), 50, y); y = y + 20
     end
-    love.graphics.print("Press a number to move that spell up. [/] to page. Left/Right rotates sections. 0 to go back.", 50, y + 20)
+    love.graphics.print("Press a number to move up. + moves down. - moves up. [/] page.", 50, y + 20)
 end
 
 function InventoryUI.RenderDetail(item)

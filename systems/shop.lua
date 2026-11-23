@@ -11,18 +11,18 @@ Shop.purchased = { weapon = {}, shield = {}, spell = {} }
 
 local function ShuffleAndPick(dataDict, count, ownedDict)
     local list = {}
-    for id, v in pairs(dataDict) do 
+    for id, v in pairs(dataDict) do
         -- FILTER: Only insert if not already owned
         if not ownedDict or not ownedDict[id] then
-            table.insert(list, v) 
+            table.insert(list, v)
         end
     end
-    
+
     for i = #list, 2, -1 do
         local j = math.random(i)
         list[i], list[j] = list[j], list[i]
     end
-    
+
     local result = {}
     for i = 1, math.min(count, #list) do table.insert(result, list[i]) end
     table.sort(result, function(a, b) return (a.price or 0) < (b.price or 0) end)
@@ -94,6 +94,7 @@ end
 
 function Shop.ProcessPurchase(player, itemType, itemId, price)
     price = price or 0
+    if itemType == "spell" and player.magicManaMultiplier then price = math.ceil(price * 1.35) end
     player.purchasedShop = player.purchasedShop or { weapon = {}, shield = {}, spell = {} }
     if itemType == "weapon" and player.purchasedShop.weapon[itemId]
         or itemType == "shield" and player.purchasedShop.shield[itemId]

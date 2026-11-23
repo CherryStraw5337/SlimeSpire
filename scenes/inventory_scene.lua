@@ -74,7 +74,7 @@ function InventoryScene:keypressed(key)
     end
 
     if self.submode == "main" then
-        if key == "escape" or key == "0" then 
+        if key == "escape" or key == "0" then
             Game.sceneManager:Switch("menu")
         elseif key == "1" then self.submode = "weapons"
         elseif key == "2" then self.submode = "shields"
@@ -99,6 +99,10 @@ function InventoryScene:keypressed(key)
             self.page = 0
         elseif key == "[" then
             self.page = math.max(0, self.page - 1)
+        elseif key == "-" then
+            self:MoveSpell(-1)
+        elseif key == "=" or key == "+" then
+            self:MoveSpell(1)
         elseif key == "]" then
             self.page = self.page + 1
         elseif key == "escape" or key == "0" then
@@ -156,6 +160,27 @@ function InventoryScene:keypressed(key)
             end
         end
     end
+end
+
+function InventoryScene:MoveSpell(direction)
+    local spells = {}
+    for id, owned in pairs(Game.player.inventory.spells or {}) do
+        if owned then table.insert(spells, id) end
+    end
+    table.sort(spells, function(a, b)
+        local Spells = require("data.spells")
+        return (Spells.Get(a).name or a) < (Spells.Get(b).name or b)
+    end)
+
+    local choice = 1
+    if self.detail and self.detail.id then
+        for i, id in ipairs(spells) do if id == self.detail.id then choice = i; break end end
+    end
+    local target = choice + direction
+    if target < 1 or target > #spells then return end
+    spells[choice], spells[target] = spells[target], spells[choice]
+    Game.player.spellOrder = spells
+    self.message = "Spell order updated."
 end
 
 return InventoryScene

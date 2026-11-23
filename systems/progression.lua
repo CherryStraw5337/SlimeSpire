@@ -4,7 +4,7 @@ local Progression = {}
 
 function Progression.OnVictory(player)
     player.totalWins = (player.totalWins or 0) + 1
-    
+
     if player.charm then
         player.completedCharms = player.completedCharms or {}
         player.completedCharms[player.charm] = true
@@ -81,7 +81,7 @@ function Progression.OnLoss(player)
     local meta = {
         unlockedCharms = player.unlockedCharms or {},
         completedCharms = player.completedCharms or {},
-        purchasedShop = player.purchasedShop or { weapon = {}, shield = {}, spell = {} },
+        purchasedShop = { weapon = {}, shield = {}, spell = {} },
         totalWins = player.totalWins or 0,
         run = { victories = 0 }
     }
