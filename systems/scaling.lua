@@ -40,8 +40,8 @@ function Scaling.BalanceEnemy(enemy, player, wave)
     if not player or not enemy then return enemy end
     local playerPower = (player.maxHp or 50) * 0.35 + (player.atk or 1) * 20 + (player.def or 1) * 12
     local enemyPower = (enemy.maxHp or 25) * 0.35 + (enemy.atk or 1) * 20 + (enemy.def or 1) * 12
-    if wave and wave > 3 and enemyPower < playerPower * 0.72 then
-        local boost = 1.12
+    if wave and wave > 3 and enemyPower < playerPower * 0.88 then
+        local boost = 1.18
         enemy.maxHp = math.max(enemy.maxHp, math.floor(enemy.maxHp * boost + 0.5))
         enemy.atk = math.max(enemy.atk, math.floor(enemy.atk * boost + 0.5))
         enemy.def = math.max(enemy.def, math.floor(enemy.def * boost + 0.5))
@@ -58,7 +58,7 @@ function Scaling.Enemy(enemy, wave)
     enemy.maxHp = math.floor(enemy.maxHp * hpScale + 0.5)
     enemy.atk = math.floor(enemy.atk * atkScale + 0.5)
     enemy.def = math.floor(enemy.def * defScale + 0.5)
-    
+
     enemy.gold = math.floor((enemy.gold or 0) * rewardScale)
     enemy.xp = math.floor((enemy.xp or 0) * rewardScale)
 end

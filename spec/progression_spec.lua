@@ -71,7 +71,7 @@ describe("Early run progression", function()
             require("data.weapons").Get("greatsword")
         )
 
-        assert.are.equal(24, result.damage)
+        assert.are.equal(10, result.damage)
     end)
 
     it("caps player level at three before wave ten", function()

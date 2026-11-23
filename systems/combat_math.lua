@@ -45,7 +45,9 @@ function CombatMath.EnemyDamage(enemy, player, shield, defending, weapon)
     local totalDefense = playerDef * shieldMultiplier
 
     -- NEW MATH: Subtraction instead of division
-    local baseDamage = enemyAtk - totalDefense
+    local defenseValue = playerDef + ((shieldMultiplier - 1) * playerDef)
+    local damageReduction = math.min(0.75, defenseValue * 0.08)
+    local baseDamage = enemyAtk * (1 - damageReduction)
     baseDamage = baseDamage * (1 - (weapon and weapon.damageReduction or 0))
     local critical = math.random(100) <= (enemy.critChance or enemy.criticalChance or Constants.Combat.ENEMY_CRIT_CHANCE)
 
