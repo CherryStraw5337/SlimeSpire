@@ -52,7 +52,7 @@ function SaveScene:keypressed(key)
     if self.submode == "erase_confirm" then
         if key == "1" then
             SaveSystem.Delete(self.eraseSlot)
-            self.eraseIndicator = "Save Slot " .. tostring(self.eraseSlot) .. " erased."
+            self.eraseIndicator = nil
             self.submode = "select"
         elseif key == "0" or key == "escape" then
             self.submode = "select"

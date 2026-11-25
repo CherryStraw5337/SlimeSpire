@@ -12,7 +12,7 @@ function VictoryUI.Render(player)
     love.graphics.print("Congratulations " .. player.name .. "!", 50, y); y = y + spacing
     love.graphics.print("You have completed wave " .. player.wave .. ".", 50, y); y = y + spacing
     love.graphics.print("Press 1 to return to the menu.", 50, y); y = y + spacing
-    love.graphics.print("Winning set:"); y = y + spacing
+    love.graphics.print("Winning set:", 50, y); y = y + spacing
     local weapon = Weapons.Get(player.weapon)
     local shield = Shields.Get(player.shield)
     local charm = Charms.Get(player.charm)
@@ -21,7 +21,7 @@ function VictoryUI.Render(player)
     love.graphics.print("Charm: " .. (charm and charm.name or "None"), 50, y); y = y + spacing
     love.graphics.print("Gold: " .. (player.gold or 0), 50, y); y = y + spacing
     love.graphics.print("Level: " .. (player.level or 1), 50, y); y = y + spacing
-    love.graphics.print("Spellbook:"); y = y + spacing
+    love.graphics.print("Spellbook:", 50, y); y = y + spacing
     local spellNames = {}
     for id, owned in pairs(player.inventory.spells or {}) do
         if owned then

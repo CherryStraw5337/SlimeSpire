@@ -52,35 +52,25 @@ function Shop.RefreshStock(player)
     for id, _ in pairs(player.purchasedShop.shield or {}) do Shop.purchased.shield[id] = true end
     for id, _ in pairs(player.purchasedShop.spell or {}) do Shop.purchased.spell[id] = true end
 
-    -- Pass the player's inventory sub-tables to filter out owned items
-    for id, _ in pairs(player.purchasedShop.weapon or {}) do
-        local item = Weapons.Get(id)
+    local function InsertRareSoldItem(stock, purchased, getItem)
+        if #stock == 0 or math.random(1, 100) > 5 then return end
+        local ids = {}
+        for id, bought in pairs(purchased or {}) do if bought then table.insert(ids, id) end end
+        if #ids == 0 then return end
+        local item = getItem(ids[math.random(#ids)])
         if item then
             local soldItem = {}
             for k, v in pairs(item) do soldItem[k] = v end
             soldItem.soldOut = true
-            table.insert(weaponStock, soldItem)
+            stock[math.random(1, #stock)] = soldItem
         end
     end
-    for id, _ in pairs(player.purchasedShop.shield or {}) do
-        local item = Shields.Get(id)
-        if item then
-            local soldItem = {}
-            for k, v in pairs(item) do soldItem[k] = v end
-            soldItem.soldOut = true
-            table.insert(shieldStock, soldItem)
-        end
-    end
+
+    InsertRareSoldItem(weaponStock, player.purchasedShop.weapon, Weapons.Get)
+    InsertRareSoldItem(shieldStock, player.purchasedShop.shield, Shields.Get)
+
     local spellStock = ShuffleAndPick(Spells.List, 3, player.inventory.spells)
-    for id, _ in pairs(player.purchasedShop.spell or {}) do
-        local item = Spells.Get(id)
-        if item then
-            local soldItem = {}
-            for k, v in pairs(item) do soldItem[k] = v end
-            soldItem.soldOut = true
-            table.insert(spellStock, soldItem)
-        end
-    end
+    InsertRareSoldItem(spellStock, player.purchasedShop.spell, Spells.Get)
 
     Shop.stock.weapon = weaponStock
     Shop.stock.shield = shieldStock

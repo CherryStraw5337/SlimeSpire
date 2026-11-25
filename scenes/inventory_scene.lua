@@ -40,7 +40,15 @@ function InventoryScene:draw()
                 if spell then table.insert(spells, { id = id, name = spell.name, description = spell.description or spell.flavour, manaCost = spell.manaCost }) end
             end
         end
-        table.sort(spells, function(a, b) return a.name < b.name end)
+        table.sort(spells, function(a, b)
+            local indexA, indexB = 0, 0
+            for i, id in ipairs(Game.player.spellOrder or {}) do
+                if id == a.id then indexA = i end
+                if id == b.id then indexB = i end
+            end
+            if indexA ~= indexB and indexA > 0 and indexB > 0 then return indexA < indexB end
+            return a.name < b.name
+        end)
         InventoryUI.RenderSpells(spells, self.page)
     elseif self.submode == "weapon_detail" or self.submode == "shield_detail" or self.submode == "spell_detail" then
         InventoryUI.RenderDetail(self.detail)
