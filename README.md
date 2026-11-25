@@ -58,7 +58,7 @@ I --> A
 ## Story **`C`**
 There isn't lore or story here, atleast for now. But if you really want something to go off of:
 > **You've been wondering the woods for years, searching for a way back home. You come across a trail of slimey fluids, leading to a tower. After following it, you end up at the Slime Tower, the one from the tales, it's said to go up to the gods's realm and beyond, with no reward or treasure. Tempted by the idea of brutally killing slimes, you enter. Once inside, all of your equipment is teleported to a shop nearby a campfire, and you feel you strength fade in an instant. Also, you notice your body became a humanoid amalgamation of weird shapes, but you didn't consider it as important as getting back your stuff.**
-**As you advance to the campfire, a sign pops up: "Welcome, unfortunate soul!! You've been inflicted with an uncurable curse, desowning you of your belongings as well as screwing up your body. I'm tired so let's cut to the chase: Reach Floor 20, defeat the Ruler, and I'll remove the curse. And no, you cannot exit until you either die or reach me. Good luck ;)".**
+**As you advance to the campfire, a sign pops up: "Welcome, unfortunate soul!! You've been inflicted with an uncurable curse, desowning you of your belongings as well as screwing up your body. I'm tired so let's cut to the chase: Reach Floor 20, defeat the Ruler, and I'll remove the curse. And no, you cannot exit until you either die or reach me. Good luck".**
 **After reading it, the sign combusts, turning into 100 gold. With the goal of getting back your stuff, kill slimes, and avoid having to pay your taxes, you head to the campfire to rest, with the stairs to the first floor behind, and prepare to ascend the tower**
 
 Feel free to add whatever to this base story. Maybe I'll add some lore in the futuro trough the game itself. Also yes, the whole body bit is how I justify the goofy looney design
@@ -80,7 +80,7 @@ As of now there's no almanac or index for slimes, weapons, spells, etc etc, so i
 
 ## Assets & Code **`C`**
 ### **PLEASE READ WITH CARE, ANY AN ALL OPINIONS ON THIS REGARD MAY BE LEFT ON THE REPO**
-I will come clear with something right now: part of the code was rewritten, checked, and fixed with the use of AI, as well as the logo. All base codes are hand-written, hand-checked, and tested in a local version of the game, plus some trusted friends.
+I will come clear with something right now: part of the code was rewritten, checked, and fixed with the use of AI and close friends of mine. All base codes are hand-written, hand-checked, and tested in a local version of the game, plus some trusted friends.
 Everything else (ost, sprites, sfx, etc) are 100% human slop. Although I also quite enjoy coding, my lack of both time and professionalism limit me. Yes, I have knowledge in Lua and I keep on studying everytime I find a roadblock during codebuilding. Oddly enough, the rest of the assets I'm not very familiar with, since I had never done sprites, or compose simple tracks, thus why I decided to do them all by hand, despite the flaws they have.
 
 ## Opinions, discussions, help, & more **`C`**
@@ -94,4 +94,4 @@ If you have any tip, comment, idea, or whatever that you would like to share, fe
 Any and all support is very much appreciated, even if it's just a star or comment!! I don't expect much since this is only the beta and alpha releases for Windows & macOS (Linux support soon!11!11!1!). Sorry mobile gng, you'll be missing out for a while. **As for now I'm doing this as a passion project, so don't look for employment or anything related (saying this just in case)**. And ofc, playing it and enjoying the goofiness of it is what I truly hope you all can do!! <3
 
 ## Contributing
-As you can probably tell, the whole game is (most likely) gonna be developed by me, myself and I. Why? Because I enjoy suffer and all nighters. But yeah, maybe I'll seek help in the sprites and ost when I see it fit
+As you can probably tell, the whole game is (most likely) gonna be developed by me, myself and I. Why? Because I enjoy suffer and pulling all-nighters. But yeah, maybe I'll seek help in the sprites and ost when I see it fit
