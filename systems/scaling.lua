@@ -13,11 +13,7 @@ local function Grow(current, scale)
 end
 
 function Scaling.RequiredXP(level)
-    local required = 150
-    for _ = 2, math.max(1, level) do
-        required = required + required * math.random(0.15, 0.95)
-    end
-    return math.floor(required)
+    return math.floor(150 * (1.55 ^ (math.max(1, level) - 1)))
 end
 
 function Scaling.CanLevel(player, wave)
