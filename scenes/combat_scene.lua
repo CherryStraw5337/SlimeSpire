@@ -5,24 +5,30 @@ local Progression = require("systems.progression")
 local Scaling = require("systems.scaling")
 local GameState = require("core.game_state")
 
+local Player = require("entities.player")
+
 local CombatScene = {}
 
 local function HandleVictory(player)
     if not player.run then player.run = { victories = 0 } end
     player.run.victories = player.run.victories + 1
+    local preLevelWave = player.wave
     player.wave = player.wave + 1
     player.mana = player.maxMana
 
-    if player.wave == 21 then
+    local wonGame = player.wave == 21
+    if wonGame then
         Progression.OnVictory(player)
     end
 
     local requiredXP = Scaling.RequiredXP(player.level)
     while player.xp >= requiredXP do
+        if not Scaling.CanLevel(player, preLevelWave) then break end
         player.xp = player.xp - requiredXP
         Scaling.LevelUp(player)
         requiredXP = Scaling.RequiredXP(player.level)
     end
+    return wonGame
 end
 
 local function CheckCombatEnd()
@@ -31,11 +37,12 @@ local function CheckCombatEnd()
 
     local result = combatState.result
     GameState.EndCombat(Game.state, result)
+    Player.ClearTransient(Game.player)
 
     if result == "victory" then
-        HandleVictory(Game.player)
+        local wonGame = HandleVictory(Game.player)
         SaveSystem.Save(Game.currentSaveSlot, Game.player)
-        Game.sceneManager:Switch("menu")
+        Game.sceneManager:Switch(wonGame and "victory" or "menu")
         
     -- Fleeing now triggers the exact same run-wipe penalty as dying!
     elseif result == "defeat" or result == "flee" then
@@ -50,29 +57,60 @@ function CombatScene:load() self.submode = "main" end
 function CombatScene:draw()
     if self.submode == "main" then CombatUI.Render(Game.state.combat.state)
     elseif self.submode == "spells" then CombatUI.RenderSpells(Game.player)
-    elseif self.submode == "potions" then CombatUI.RenderPotions(Game.player) end
+    elseif self.submode == "potions" then CombatUI.RenderPotions(Game.player)
+    elseif self.submode == "flee_confirm" then
+        CombatUI.Render(Game.state.combat.state)
+        love.graphics.print("Flee this battle?  1. Yes  2. No", 350, 50)
+    end
 end
 
 function CombatScene:keypressed(key)
+    if self.submode == "flee_confirm" then
+        if key == "1" then
+            Combat.ProcessAction(Game.state.combat.state, "flee")
+            CheckCombatEnd()
+            self.submode = "main"
+        elseif key == "2" or key == "0" or key == "escape" then
+            self.submode = "main"
+        end
+        return
+    end
     if self.submode == "main" then
         local action = nil
         if key == "1" then action = "attack"
         elseif key == "2" then action = "defend"
         elseif key == "3" then self.submode = "spells"; return
         elseif key == "4" then self.submode = "potions"; return
-        elseif key == "5" then action = "flee" end
+        elseif key == "5" then self.submode = "flee_confirm"; return end
 
         if action then Combat.ProcessAction(Game.state.combat.state, action); CheckCombatEnd() end
     elseif self.submode == "spells" then
         if key == "0" or key == "escape" then self.submode = "main" else
             local choice = tonumber(key)
             if choice then
-                local idx = 1
+                local ids = {}
+                local seen = {}
+                for _, id in ipairs(Game.player.spellOrder or {}) do
+                    if Game.player.inventory.spells[id] then ids[#ids + 1] = id; seen[id] = true end
+                end
                 for id, owned in pairs(Game.player.inventory.spells or {}) do
-                    if owned then
-                        if idx == choice then Combat.ProcessAction(Game.state.combat.state, "spell", id); CheckCombatEnd(); self.submode = "main"; break end
-                        idx = idx + 1
+                    if owned and not seen[id] then table.insert(ids, id) end
+                end
+                table.sort(ids, function(a, b)
+                    local indexA, indexB = 0, 0
+                    for i, id in ipairs(Game.player.spellOrder or {}) do
+                        if id == a then indexA = i end
+                        if id == b then indexB = i end
                     end
+                    if indexA ~= indexB and indexA > 0 and indexB > 0 then return indexA < indexB end
+                    local spellA = require("data.spells").Get(a)
+                    local spellB = require("data.spells").Get(b)
+                    return (spellA and spellA.name or a) < (spellB and spellB.name or b)
+                end)
+                if ids[choice] then
+                    Combat.ProcessAction(Game.state.combat.state, "spell", ids[choice])
+                    CheckCombatEnd()
+                    self.submode = "main"
                 end
             end
         end

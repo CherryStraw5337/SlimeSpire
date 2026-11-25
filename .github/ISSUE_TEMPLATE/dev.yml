@@ -1,0 +1,83 @@
+name: Dev Task
+description: Planned development work (feature, refactor, fix, tooling) to be done by the maintainer.
+title: "[DEV]: "
+labels: ["dev"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Internal task for planned work on **SlimeSpire**.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What needs to be done and why?
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type of work
+      options:
+        - Feature
+        - Bug fix
+        - Refactor
+        - Balance / Data
+        - UI
+        - Audio / Art integration
+        - Tests
+        - Docs / Tooling
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Main part of the codebase affected.
+      multiple: true
+      options:
+        - core
+        - data
+        - entities
+        - scenes
+        - systems
+        - ui
+        - sfx / ost
+        - sprites
+        - spec (tests)
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Task checklist
+      description: Break the work into steps.
+      value: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Definition of done
+      description: How do you know this is finished? (behavior, tests passing, changelog entry...)
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Low
+        - Medium
+        - High
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes / Dependencies (Optional)
+      description: Related issues, files, design notes, or blockers.

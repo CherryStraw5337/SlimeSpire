@@ -25,7 +25,8 @@ function ShopUI.RenderCategory(player, categoryName, items)
     for i, item in ipairs(items) do
         -- Safety: Default to 0 if price is nil
         local price = item.price or 0
-        love.graphics.print(i .. ". " .. item.name .. " (" .. price .. " Gold)", 50, y); y = y + spacing
+        local soldOut = item.soldOut and " [SOLD OUT]" or ""
+        love.graphics.print(i .. ". " .. item.name .. " (" .. price .. " Gold)" .. soldOut, 50, y); y = y + spacing
         
         if item.description then
             love.graphics.print("   " .. item.description, 50, y); y = y + spacing

@@ -19,7 +19,7 @@ local Enemies = {
         xp = math.random(60, 70),
         gold = math.random(60, 70),
         critChance = 5,
-        burnAttack = math.random(0,0.5)
+        burnAttack = math.random() < 0.5 and 0.1 or 0
     },
     heavy_slime = {
         id = "heavy_slime",

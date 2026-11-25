@@ -27,6 +27,7 @@ function Enemy.Create(id, wave)
 
     if wave then
         Scaling.Enemy(enemy, wave)
+        if wave <= 3 then enemy.critChance = 0 end
         
         -- MASTER (Wave 100, 200...)
         if wave % 100 == 0 then
@@ -71,14 +72,26 @@ function Enemy.Create(id, wave)
     return enemy
 end
 
-function Enemy.Random(wave)
+function Enemy.Random(wave, player)
     if wave and wave <= 3 then
-        return Enemy.Create("slime", wave)
+        local enemy = Enemy.Create("slime", wave)
+        if player then Scaling.BalanceEnemy(enemy, player, wave) end
+        enemy.hp = enemy.maxHp
+        return enemy
+    end
+    if wave == 5 then
+        local enemy = Enemy.Create("slime", wave)
+        if player then Scaling.BalanceEnemy(enemy, player, wave) end
+        enemy.hp = enemy.maxHp
+        return enemy
     end
     local keys = {}
     for key, _ in pairs(EnemiesData) do table.insert(keys, key) end
     local randomKey = keys[math.random(#keys)]
-    return Enemy.Create(randomKey, wave)
+    local enemy = Enemy.Create(randomKey, wave)
+    if player then Scaling.BalanceEnemy(enemy, player, wave) end
+    enemy.hp = enemy.maxHp
+    return enemy
 end
 
 return Enemy

@@ -35,18 +35,39 @@ function Charms.Get(id)
 end
 
 function Charms.Apply(player)
-    -- This is where we will eventually hook all the mechanical stat boosts
-    -- based on player.charm when a run starts!
     local activeCharm = Charms.Get(player.charm)
     if not activeCharm then return end
-    
-    -- Example hook (You can expand this later to apply the actual modifiers!)
-    if player.charm == "pacifist" then
+
+    if player.charm == "lucky" then
+        player.critChance = math.max(player.critChance or 10, 35)
+    elseif player.charm == "vampiric" then
+        player.lifeSteal = math.max(player.lifeSteal or 0, 1 / 8)
+    elseif player.charm == "magic" then
+        player.magicDamageMultiplier = math.max(player.magicDamageMultiplier or 1, 1.20)
+        player.magicManaMultiplier = math.max(player.magicManaMultiplier or 1, 1.35)
+    elseif player.charm == "exchange" then
+        player.outgoingDamageMultiplier = 2.0
+        player.incomingDamageMultiplier = 2.0
+    elseif player.charm == "challenge" then
+        player.enemyScalingMultiplier = 1.50
+        player.bonusXpMultiplier = 2.0
+        player.bonusGoldMultiplier = 2.0
+    elseif player.charm == "pacifist" then
         player.inventory.shields["spiky_back"] = true
         player.shield = "spiky_back"
+        player.disableAttacks = true
+        player.disableSpells = true
+        player.shieldPowerMultiplier = 3.0
+        player.baseHp = math.floor((player.baseHp or player.maxHp) * 1.50)
+        player.baseMana = math.floor((player.baseMana or player.maxMana) * 1.50)
     elseif player.charm == "violent" then
         player.inventory.weapons["combat_knife"] = true
         player.weapon = "combat_knife"
+        player.disableDefense = true
+        player.disablePotions = true
+        player.outgoingDamageMultiplier = 3.0
+        player.maxMana = math.floor((player.maxMana or 25) * 2.0)
+        player.mana = player.maxMana
     end
 end
 

@@ -6,6 +6,7 @@ local GameState = require("core.game_state")
 local SaveScene = {}
 
 local function PreparePlayer(player)
+    Player.ClearTransient(player)
     player.level = player.level or 1
     player.wave = player.wave or 1
     player.hp = player.hp or 50
@@ -26,7 +27,7 @@ end
 
 function SaveScene:draw()
     if self.submode == "select" then
-        love.graphics.print("=== FIRST GAME: A ROGUELIKE ===", 50, 50)
+        love.graphics.print("=== SLIMESPIRE ===", 50, 50)
         love.graphics.print("1. Load Save Slot 1", 50, 100)
         love.graphics.print("2. Load Save Slot 2", 50, 130)
         love.graphics.print("3. Load Save Slot 3", 50, 160)
@@ -34,6 +35,11 @@ function SaveScene:draw()
         love.graphics.print("4. Erase Save 1", 50, 230)
         love.graphics.print("5. Erase Save 2", 50, 260)
         love.graphics.print("6. Erase Save 3", 50, 290)
+        if self.eraseIndicator then love.graphics.print(self.eraseIndicator, 50, 320) end
+    elseif self.submode == "erase_confirm" then
+        love.graphics.print("Erase Save Slot " .. tostring(self.eraseSlot) .. "?", 50, 100)
+        love.graphics.print("1. Confirm Erase", 50, 130)
+        love.graphics.print("0. Cancel", 50, 160)
     elseif self.submode == "name_input" then
         love.graphics.print("ENTER YOUR NAME:", 50, 50)
         love.graphics.print(self.currentName .. "_", 50, 100)
@@ -43,6 +49,16 @@ function SaveScene:draw()
 end
 
 function SaveScene:keypressed(key)
+    if self.submode == "erase_confirm" then
+        if key == "1" then
+            SaveSystem.Delete(self.eraseSlot)
+            self.eraseIndicator = "Save Slot " .. tostring(self.eraseSlot) .. " erased."
+            self.submode = "select"
+        elseif key == "0" or key == "escape" then
+            self.submode = "select"
+        end
+        return
+    end
     if self.submode == "select" then
         if key == "1" or key == "2" or key == "3" then
             Game.currentSaveSlot = tonumber(key)
@@ -55,9 +71,9 @@ function SaveScene:keypressed(key)
                 self.currentName = ""
                 self.submode = "name_input"
             end
-        elseif key == "4" then SaveSystem.Delete(1)
-        elseif key == "5" then SaveSystem.Delete(2)
-        elseif key == "6" then SaveSystem.Delete(3)
+        elseif key == "4" then self.eraseSlot = 1; self.submode = "erase_confirm"
+        elseif key == "5" then self.eraseSlot = 2; self.submode = "erase_confirm"
+        elseif key == "6" then self.eraseSlot = 3; self.submode = "erase_confirm"
         end
     elseif self.submode == "name_input" then
         if key == "backspace" then

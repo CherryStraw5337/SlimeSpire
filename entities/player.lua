@@ -1,4 +1,5 @@
 local Constants = require("core.constants")
+local Weapons = require("data.weapons")
 
 local Player = {}
 
@@ -25,6 +26,7 @@ function Player.Create(name)
 
         gold = Constants.Player.BASE_GOLD,
         weapon = "fists",
+        purchasedShop = { weapon = {}, shield = {}, spell = {} },
         shield = "none",
         charm = nil,
 
@@ -39,16 +41,26 @@ function Player.Create(name)
     }
 end
 
+-- Combat-only fields that must never persist in saves or across fights.
+Player.TRANSIENT_FIELDS = { "status", "statuses", "statusImmunity", "frostbited", "paralyzed", "defending", "shieldActive", "battleSpellCount", "battleSpellIds" }
+
+function Player.ClearTransient(player)
+    for _, field in ipairs(Player.TRANSIENT_FIELDS) do player[field] = nil end
+end
+
 function Player.Recalculate(player)
-    -- 1. Reset active stats back to the safe base level
-    player.maxHp = player.baseHp
+    local weapon = Weapons.Get(player.weapon)
+    player.baseHp = player.baseHp or player.maxHp or Constants.Player.BASE_HP
+    player.baseMana = player.baseMana or player.maxMana or Constants.Player.BASE_MANA
+    player.baseAtk = player.baseAtk or player.atk or Constants.Player.BASE_ATK
+    player.baseDef = player.baseDef or player.def or Constants.Player.BASE_DEF
+    player.maxHp = player.baseHp + (weapon and weapon.hpBonus or 0)
     player.maxMana = player.baseMana
     player.atk = player.baseAtk
-    player.def = player.baseDef
+    player.def = player.baseDef + (weapon and weapon.defenseBonus or 0)
 
-    -- 2. Ensure current HP/Mana don't magically exceed the new maxes
-    player.hp = math.min(player.hp, player.maxHp)
-    player.mana = math.min(player.mana, player.maxMana)
+    player.hp = math.min(player.hp or player.maxHp, player.maxHp)
+    player.mana = math.min(player.mana or player.maxMana, player.maxMana)
 end
 
 return Player

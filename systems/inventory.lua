@@ -1,5 +1,6 @@
 local Weapons = require("data.weapons")
 local Shields = require("data.shields")
+local Player = require("entities.player")
 
 local Inventory = {}
 
@@ -56,6 +57,7 @@ function Inventory.EquipWeapon(player, weaponId)
     if not player.inventory.weapons[weaponId] then return false end
     if not Weapons.Get(weaponId) then return false end
     player.weapon = weaponId
+    Player.Recalculate(player)
     return true
 end
 

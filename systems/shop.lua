@@ -7,6 +7,7 @@ local Shop = {}
 
 Shop.currentWave = -1
 Shop.stock = { weapon = {}, shield = {}, spell = {}, potion = {} }
+Shop.purchased = { weapon = {}, shield = {}, spell = {} }
 
 local function ShuffleAndPick(dataDict, count, ownedDict)
     local list = {}
@@ -30,11 +31,60 @@ end
 
 function Shop.RefreshStock(player)
     Shop.currentWave = player.wave
-    
+
+    local weaponStock = ShuffleAndPick(Weapons.Data, 3, player.inventory.weapons)
+    local shieldStock = ShuffleAndPick(Shields.Data, 3, player.inventory.shields)
+    if player.wave <= 3 then
+        if not player.inventory.weapons.basic_sword and #weaponStock > 0 and math.random(1, 100) <= 50 then
+            weaponStock[math.random(1, #weaponStock)] = Weapons.Get("basic_sword")
+        end
+        if not player.inventory.shields.basic_shield and #shieldStock > 0 and math.random(1, 100) <= 50 then
+            shieldStock[math.random(1, #shieldStock)] = Shields.Get("basic_shield")
+        end
+    end
+
+    table.sort(weaponStock, function(a, b) return (a.price or 0) < (b.price or 0) end)
+    table.sort(shieldStock, function(a, b) return (a.price or 0) < (b.price or 0) end)
+
+    -- Merge persistent purchased state with this save's shop state.
+    player.purchasedShop = player.purchasedShop or { weapon = {}, shield = {}, spell = {} }
+    for id, _ in pairs(player.purchasedShop.weapon or {}) do Shop.purchased.weapon[id] = true end
+    for id, _ in pairs(player.purchasedShop.shield or {}) do Shop.purchased.shield[id] = true end
+    for id, _ in pairs(player.purchasedShop.spell or {}) do Shop.purchased.spell[id] = true end
+
     -- Pass the player's inventory sub-tables to filter out owned items
-    Shop.stock.weapon = ShuffleAndPick(Weapons.Data, 3, player.inventory.weapons)
-    Shop.stock.shield = ShuffleAndPick(Shields.Data, 3, player.inventory.shields)
-    Shop.stock.spell = ShuffleAndPick(Spells.List, 3, player.inventory.spells)
+    for id, _ in pairs(player.purchasedShop.weapon or {}) do
+        local item = Weapons.Get(id)
+        if item then
+            local soldItem = {}
+            for k, v in pairs(item) do soldItem[k] = v end
+            soldItem.soldOut = true
+            table.insert(weaponStock, soldItem)
+        end
+    end
+    for id, _ in pairs(player.purchasedShop.shield or {}) do
+        local item = Shields.Get(id)
+        if item then
+            local soldItem = {}
+            for k, v in pairs(item) do soldItem[k] = v end
+            soldItem.soldOut = true
+            table.insert(shieldStock, soldItem)
+        end
+    end
+    local spellStock = ShuffleAndPick(Spells.List, 3, player.inventory.spells)
+    for id, _ in pairs(player.purchasedShop.spell or {}) do
+        local item = Spells.Get(id)
+        if item then
+            local soldItem = {}
+            for k, v in pairs(item) do soldItem[k] = v end
+            soldItem.soldOut = true
+            table.insert(spellStock, soldItem)
+        end
+    end
+
+    Shop.stock.weapon = weaponStock
+    Shop.stock.shield = shieldStock
+    Shop.stock.spell = spellStock
 
     local pots = {}
     for _, p in pairs(Potions.List) do table.insert(pots, p) end
@@ -43,22 +93,36 @@ function Shop.RefreshStock(player)
 end
 
 function Shop.ProcessPurchase(player, itemType, itemId, price)
-    price = price or 0 
+    price = price or 0
+    player.purchasedShop = player.purchasedShop or { weapon = {}, shield = {}, spell = {} }
+    if itemType == "weapon" and player.purchasedShop.weapon[itemId]
+        or itemType == "shield" and player.purchasedShop.shield[itemId]
+        or itemType == "spell" and player.purchasedShop.spell[itemId] then
+        return false, "This item is SOLD OUT."
+    end
     if player.gold < price then return false, "Not enough gold." end
 
     if itemType == "weapon" then
         player.gold = player.gold - price
         player.inventory.weapons[itemId] = true
+        Shop.purchased.weapon[itemId] = true
+        player.purchasedShop.weapon[itemId] = true
         Shop.RefreshStock(player) -- Refresh to remove it from screen
         return true, "Weapon purchased!"
     elseif itemType == "shield" then
         player.gold = player.gold - price
         player.inventory.shields[itemId] = true
+        Shop.purchased.shield[itemId] = true
+        player.purchasedShop.shield[itemId] = true
         Shop.RefreshStock(player)
         return true, "Shield purchased!"
     elseif itemType == "spell" then
         player.gold = player.gold - price
         player.inventory.spells[itemId] = true
+        Shop.purchased.spell[itemId] = true
+        player.purchasedShop.spell[itemId] = true
+        player.spellOrder = player.spellOrder or {}
+        table.insert(player.spellOrder, itemId)
         Shop.RefreshStock(player)
         return true, "Spell learned!"
     elseif itemType == "potion" then
