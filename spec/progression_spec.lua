@@ -139,6 +139,16 @@ describe("Early run progression", function()
         assert.is_true(enemy.maxHp >= before)
     end)
 
+    it("uses type, category, and wave bands for gold pools", function()
+        local normal = Scaling.GoldReward("slime", 5, "normal")
+        local elite = Scaling.GoldReward("slime", 5, "elite")
+        local heavy = Scaling.GoldReward("heavy_slime", 15, "normal")
+
+        assert.is_true(normal >= 20 and normal <= 35)
+        assert.is_true(elite >= 30)
+        assert.is_true(heavy >= 74)
+    end)
+
     it("opens one random Tier 2 charm after a Tier 1 win", function()
         local player = Player.Create("Tester")
         player.completedCharms = { lucky = true }

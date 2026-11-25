@@ -11,15 +11,12 @@ function LootSystem.GenerateDrop(player, enemy, combatState)
     local goldDrop = math.random(minGold, maxGold)
 
     player.gold = player.gold + goldDrop
-    
-    EventQueue.Push(combatState.events, "TEXT", { text = "+" .. goldDrop .. " Gold" })
 
     local baseXp = enemy.xp or 30
     local minXp = math.max(1, math.floor(baseXp * 0.8))
     local maxXp = math.floor(baseXp * 1.2)
     local xpDrop = math.random(minXp, maxXp)
     
-    player.gold = player.gold + goldDrop
     player.xp = player.xp + xpDrop
     
     EventQueue.Push(combatState.events, "TEXT", { text = "+" .. goldDrop .. " Gold" })

@@ -53,6 +53,32 @@ function Scaling.BalanceEnemy(enemy, player, wave)
     return enemy
 end
 
+function Scaling.GoldReward(enemyId, wave, category)
+    local ranges = {
+        slime = { 20, 35 },
+        red_slime = { 35, 55 },
+        heavy_slime = { 55, 90 }
+    }
+    local range = ranges[enemyId] or ranges.slime
+    local waveMin, waveMax = range[1], range[2]
+
+    if wave and wave >= 11 and wave <= 20 then
+        waveMin, waveMax = math.floor(waveMin * 1.35), math.floor(waveMax * 1.35)
+    elseif wave and wave > 20 then
+        waveMin, waveMax = math.floor(waveMin * 2.0), math.floor(waveMax * 2.0)
+    end
+
+    local categoryMultiplier = 1
+    if category == "elite" then categoryMultiplier = 1.5
+    elseif category == "ruler" then categoryMultiplier = 3.0
+    elseif category == "master" then categoryMultiplier = 5.0 end
+
+    return math.random(
+        math.floor(waveMin * categoryMultiplier),
+        math.floor(waveMax * categoryMultiplier)
+    )
+end
+
 function Scaling.Enemy(enemy, wave)
     local hpScale = 1 + ((wave - 1) * Constants.EnemyScaling.HP_PER_WAVE)
     local atkScale = 1 + ((wave - 1) * Constants.EnemyScaling.ATK_PER_WAVE)

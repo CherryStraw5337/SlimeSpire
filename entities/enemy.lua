@@ -25,12 +25,14 @@ function Enemy.Create(id, wave)
 
     local enemy = DeepCopy(baseData)
 
+    local category = "normal"
     if wave then
         Scaling.Enemy(enemy, wave)
         if wave <= 3 then enemy.critChance = 0 end
         
         -- MASTER (Wave 100, 200...)
         if wave % 100 == 0 then
+            category = "master"
             enemy.name = enemy.name .. " Master"
             enemy.isMaster = true
             enemy.maxHp = enemy.maxHp * 5
@@ -39,6 +41,7 @@ function Enemy.Create(id, wave)
 
         -- RULER (Wave 20, 40, 60, 80...)
         elseif wave % 20 == 0 then
+            category = "ruler"
             enemy.isRuler = true
             enemy.element = Elements[math.random(#Elements)]
             enemy.name = enemy.name .. " " .. string.upper(enemy.element:sub(1,1)) .. enemy.element:sub(2) .. " Ruler"
@@ -46,6 +49,7 @@ function Enemy.Create(id, wave)
 
         -- ELITE (Wave 5, 10, 15...)
         elseif wave % 5 == 0 then
+            category = "elite"
             enemy.isElite = true
             enemy.name = "Elite " .. enemy.name
             
@@ -66,7 +70,9 @@ function Enemy.Create(id, wave)
         end
     end
 
-    -- THE FIX: Set active HP *after* all scaling and boss multipliers are applied!
+    enemy.gold = Scaling.GoldReward(enemy.id, wave or 1, category)
+
+    -- Set active HP after all scaling and boss multipliers are applied.
     enemy.hp = enemy.maxHp
 
     return enemy
