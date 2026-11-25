@@ -13,9 +13,9 @@ local function Grow(current, scale)
 end
 
 function Scaling.RequiredXP(level)
-    local required = 9
+    local required = 150
     for _ = 2, math.max(1, level) do
-        required = required ^ 3
+        required = required + required * math.random(0.15, 0.95)
     end
     return math.floor(required)
 end
