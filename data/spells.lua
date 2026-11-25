@@ -39,7 +39,7 @@ Spells.List = {
         cast = function(player, enemy, pushEvent)
             local hits = math.random(3, 6)
             local totalDamage = 0
-            for count = 1, hits do
+            for _ = 1, hits do
                 totalDamage = totalDamage + CalculateDamage(player, enemy, 12)
             end
             enemy.hp = math.max(0, enemy.hp - totalDamage)

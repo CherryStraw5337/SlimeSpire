@@ -358,7 +358,7 @@ local function Defend(state)
     player.defending = false
 
     if state.finished or player.hp <= 0 then return end
-    local shield = Shield(player)
+    shield = Shield(player)
     if shield and (shield.manaBonus or 0) > 0 then
         local manaGain = math.floor(player.maxMana * shield.manaBonus / 100)
         player.mana = math.min(player.maxMana, player.mana + manaGain)

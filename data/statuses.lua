@@ -3,9 +3,7 @@ local Status = {}
 local function ApplyTimed(target, type, duration, power, source)
     target.statuses = target.statuses or {}
     target.statusImmunity = target.statusImmunity or {}
-    for _ in pairs(target.statuses) do
-        return false
-    end
+    if next(target.statuses) ~= nil then return false end
     if (target.statusImmunity[type] or 0) > 0 then
         return false
     end
