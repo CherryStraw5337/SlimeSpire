@@ -78,7 +78,7 @@ Weapons.Data = {
         damageMultiplier = 5,
         manaBonus = 5,
         hpPenalty = 5,
-        price = 25000
+        price = 12000
     },
     bloodlust_chained_claws = {
         id = "bloodlust_chained_claws",
@@ -88,7 +88,7 @@ Weapons.Data = {
         damageMultiplier = 3.5,
         lifesteal = 0.2,
         damageReduction = 0.5,
-        price = 60000
+        price = 12000
     },
     prismatic_slime_slasher = {
         id = "prismatic_slime_slasher",
@@ -98,7 +98,7 @@ Weapons.Data = {
         damageMultiplier = 30,
         scorch = true,
         paralysisChance = 0.5,
-        price = 250000
+        price = 15000
     }
 }
 
