@@ -42,7 +42,7 @@ function Player.Create(name)
 end
 
 -- Combat-only fields that must never persist in saves or across fights.
-Player.TRANSIENT_FIELDS = { "status", "statuses", "statusImmunity", "frostbited", "paralyzed", "defending", "shieldActive", "battleSpellCount", "battleSpellIds" }
+Player.TRANSIENT_FIELDS = { "status", "statuses", "statusImmunity", "frostbited", "paralyzed", "defending", "shieldActive", "battleSpellCount", "battleSpellIds", "icebergShieldHp" }
 
 function Player.ClearTransient(player)
     for _, field in ipairs(Player.TRANSIENT_FIELDS) do player[field] = nil end

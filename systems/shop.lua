@@ -11,18 +11,18 @@ Shop.purchased = { weapon = {}, shield = {}, spell = {} }
 
 local function ShuffleAndPick(dataDict, count, ownedDict)
     local list = {}
-    for id, v in pairs(dataDict) do 
+    for id, v in pairs(dataDict) do
         -- FILTER: Only insert if not already owned
         if not ownedDict or not ownedDict[id] then
-            table.insert(list, v) 
+            table.insert(list, v)
         end
     end
-    
+
     for i = #list, 2, -1 do
         local j = math.random(i)
         list[i], list[j] = list[j], list[i]
     end
-    
+
     local result = {}
     for i = 1, math.min(count, #list) do table.insert(result, list[i]) end
     table.sort(result, function(a, b) return (a.price or 0) < (b.price or 0) end)
@@ -52,35 +52,25 @@ function Shop.RefreshStock(player)
     for id, _ in pairs(player.purchasedShop.shield or {}) do Shop.purchased.shield[id] = true end
     for id, _ in pairs(player.purchasedShop.spell or {}) do Shop.purchased.spell[id] = true end
 
-    -- Pass the player's inventory sub-tables to filter out owned items
-    for id, _ in pairs(player.purchasedShop.weapon or {}) do
-        local item = Weapons.Get(id)
+    local function InsertRareSoldItem(stock, purchased, getItem)
+        if #stock == 0 or math.random(1, 100) > 5 then return end
+        local ids = {}
+        for id, bought in pairs(purchased or {}) do if bought then table.insert(ids, id) end end
+        if #ids == 0 then return end
+        local item = getItem(ids[math.random(#ids)])
         if item then
             local soldItem = {}
             for k, v in pairs(item) do soldItem[k] = v end
             soldItem.soldOut = true
-            table.insert(weaponStock, soldItem)
+            stock[math.random(1, #stock)] = soldItem
         end
     end
-    for id, _ in pairs(player.purchasedShop.shield or {}) do
-        local item = Shields.Get(id)
-        if item then
-            local soldItem = {}
-            for k, v in pairs(item) do soldItem[k] = v end
-            soldItem.soldOut = true
-            table.insert(shieldStock, soldItem)
-        end
-    end
+
+    InsertRareSoldItem(weaponStock, player.purchasedShop.weapon, Weapons.Get)
+    InsertRareSoldItem(shieldStock, player.purchasedShop.shield, Shields.Get)
+
     local spellStock = ShuffleAndPick(Spells.List, 3, player.inventory.spells)
-    for id, _ in pairs(player.purchasedShop.spell or {}) do
-        local item = Spells.Get(id)
-        if item then
-            local soldItem = {}
-            for k, v in pairs(item) do soldItem[k] = v end
-            soldItem.soldOut = true
-            table.insert(spellStock, soldItem)
-        end
-    end
+    InsertRareSoldItem(spellStock, player.purchasedShop.spell, Spells.Get)
 
     Shop.stock.weapon = weaponStock
     Shop.stock.shield = shieldStock
@@ -94,6 +84,7 @@ end
 
 function Shop.ProcessPurchase(player, itemType, itemId, price)
     price = price or 0
+    if itemType == "spell" and player.magicManaMultiplier then price = math.ceil(price * 1.35) end
     player.purchasedShop = player.purchasedShop or { weapon = {}, shield = {}, spell = {} }
     if itemType == "weapon" and player.purchasedShop.weapon[itemId]
         or itemType == "shield" and player.purchasedShop.shield[itemId]

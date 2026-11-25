@@ -13,7 +13,7 @@ local function Grow(current, scale)
 end
 
 function Scaling.RequiredXP(level)
-    return math.floor(Constants.Progression.XP_BASE * (Constants.Progression.XP_SCALE ^ (level - 1)))
+    return math.floor(150 * (1.55 ^ (math.max(1, level) - 1)))
 end
 
 function Scaling.CanLevel(player, wave)
@@ -40,13 +40,39 @@ function Scaling.BalanceEnemy(enemy, player, wave)
     if not player or not enemy then return enemy end
     local playerPower = (player.maxHp or 50) * 0.35 + (player.atk or 1) * 20 + (player.def or 1) * 12
     local enemyPower = (enemy.maxHp or 25) * 0.35 + (enemy.atk or 1) * 20 + (enemy.def or 1) * 12
-    if wave and wave > 3 and enemyPower < playerPower * 0.72 then
-        local boost = 1.12
+    if wave and wave > 3 and enemyPower < playerPower * 0.88 then
+        local boost = 1.18
         enemy.maxHp = math.max(enemy.maxHp, math.floor(enemy.maxHp * boost + 0.5))
         enemy.atk = math.max(enemy.atk, math.floor(enemy.atk * boost + 0.5))
         enemy.def = math.max(enemy.def, math.floor(enemy.def * boost + 0.5))
     end
     return enemy
+end
+
+function Scaling.GoldReward(enemyId, wave, category)
+    local ranges = {
+        slime = { 20, 35 },
+        red_slime = { 35, 55 },
+        heavy_slime = { 55, 90 }
+    }
+    local range = ranges[enemyId] or ranges.slime
+    local waveMin, waveMax = range[1], range[2]
+
+    if wave and wave >= 11 and wave <= 20 then
+        waveMin, waveMax = math.floor(waveMin * 1.35), math.floor(waveMax * 1.35)
+    elseif wave and wave > 20 then
+        waveMin, waveMax = math.floor(waveMin * 2.0), math.floor(waveMax * 2.0)
+    end
+
+    local categoryMultiplier = 1
+    if category == "elite" then categoryMultiplier = 1.5
+    elseif category == "ruler" then categoryMultiplier = 3.0
+    elseif category == "master" then categoryMultiplier = 5.0 end
+
+    return math.random(
+        math.floor(waveMin * categoryMultiplier),
+        math.floor(waveMax * categoryMultiplier)
+    )
 end
 
 function Scaling.Enemy(enemy, wave)
@@ -58,7 +84,7 @@ function Scaling.Enemy(enemy, wave)
     enemy.maxHp = math.floor(enemy.maxHp * hpScale + 0.5)
     enemy.atk = math.floor(enemy.atk * atkScale + 0.5)
     enemy.def = math.floor(enemy.def * defScale + 0.5)
-    
+
     enemy.gold = math.floor((enemy.gold or 0) * rewardScale)
     enemy.xp = math.floor((enemy.xp or 0) * rewardScale)
 end

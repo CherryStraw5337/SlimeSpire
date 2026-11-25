@@ -10,7 +10,7 @@ function CombatUI.Render(state)
     local spacing = 25
 
     love.graphics.print("=== COMBAT ===", 50, y); y = y + (spacing * 2)
-    
+
     local enemyStatus = ""
     if enemy.paralyzed and enemy.paralyzedTurn == state.turn then enemyStatus = enemyStatus .. " [PARALYZED]" end
     for _, status in pairs(enemy.statuses or {}) do
@@ -24,34 +24,38 @@ function CombatUI.Render(state)
             playerStatus = playerStatus .. " [" .. string.upper(status.type) .. "]"
         end
     end
-    
+
     love.graphics.print(enemy.name .. " (HP: " .. enemy.hp .. " / " .. enemy.maxHp .. ")" .. enemyStatus, 50, y); y = y + (spacing * 2)
     love.graphics.print("   vs   ", 50, y); y = y + (spacing * 2)
-    
+
     love.graphics.print(player.name .. playerStatus, 50, y); y = y + spacing
     love.graphics.print("Level: " .. player.level, 50, y); y = y + spacing
     love.graphics.print("HP: " .. player.hp .. " / " .. player.maxHp, 50, y); y = y + spacing
-    love.graphics.print("Mana: " .. player.mana .. " / " .. player.maxMana, 50, y); y = y + (spacing * 2)
-    
+    love.graphics.print("Mana: " .. player.mana .. " / " .. player.maxMana, 50, y); y = y + spacing
+    if (player.icebergShieldHp or 0) > 0 then
+        love.graphics.print("Iceberg Shield HP: " .. player.icebergShieldHp, 50, y); y = y + spacing
+    end
+    y = y + spacing
+
     love.graphics.print("1. Attack   2. Defend   3. Spells   4. Potions   5. Flee", 50, y)
 
     -- Battle Log
     local eventY = y + 50
     love.graphics.print("--- BATTLE LOG ---", 50, eventY)
     eventY = eventY + 25
-    
+
     local startIndex = math.max(1, #state.events - 4)
-    
+
     for i = startIndex, #state.events do
         local ev = state.events[i]
         local text = ""
-        
+
         if ev.type == "PLAYER_ATTACK" then
             text = "PLAYER: You dealt " .. ev.data.damage .. " DMG!"
             if ev.data.critical then text = text .. " (CRITICAL!)" end
         elseif ev.type == "ENEMY_ATTACK" then
             text = "SLIME: " .. ev.data.attacker .. " hits you for " .. ev.data.damage .. " DMG!"
-            
+
         -- THE FIX: Now shows the damage number AND the custom spell text on the same line
         elseif ev.type == "SPELL_CAST" then
             if ev.data.healing and ev.data.damage > 0 then
@@ -70,7 +74,7 @@ function CombatUI.Render(state)
             text = "You use " .. ev.data.potion .. ": " .. (ev.data.text or "Potion effect applied.")
         elseif ev.type == "BUFF_APPLIED" then
             text = "Buff applied: " .. (ev.data.buff or "Battle buff active.")
-            
+
         elseif ev.type == "TEXT" then
             text = ev.data.text
         elseif ev.type == "PLAYER_DEFENDING" then
@@ -80,13 +84,13 @@ function CombatUI.Render(state)
         else
             text = "[" .. ev.type .. "]"
         end
-        
+
         love.graphics.print(text, 50, eventY)
         eventY = eventY + 20
     end
 end
 
-function CombatUI.RenderSpells(player)
+function CombatUI.RenderSpells(player, page)
     local y = 350
     local spacing = 20
     love.graphics.print("--- SPELLBOOK ---", 50, y); y = y + spacing
@@ -109,10 +113,16 @@ function CombatUI.RenderSpells(player)
         local spellB = Spells.Get(b)
         return (spellA and spellA.name or a) < (spellB and spellB.name or b)
     end)
-    for index, id in ipairs(ids) do
+    page = page or 0
+    local startIndex = page * 9 + 1
+    local endIndex = math.min(#ids, startIndex + 8)
+    for index = startIndex, endIndex do
+        local id = ids[index]
         local spell = Spells.Get(id)
         if spell then
-            love.graphics.print(index .. ". " .. spell.name .. " (" .. spell.manaCost .. " MP)", 50, y)
+            local manaCost = spell.manaCost
+            if player.magicManaMultiplier then manaCost = math.ceil(manaCost * player.magicManaMultiplier) end
+            love.graphics.print((index - page * 9) .. ". " .. spell.name .. " (" .. manaCost .. " MP)", 50, y)
             y = y + spacing
         end
     end

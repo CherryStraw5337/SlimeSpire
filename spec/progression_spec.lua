@@ -29,9 +29,10 @@ describe("Early run progression", function()
         assert.is_true(waveTwo.maxHp >= waveOne.maxHp)
     end)
 
-    it("requires less experience for the first level", function()
-        assert.are.equal(80, Scaling.RequiredXP(1))
-        assert.are.equal(104, Scaling.RequiredXP(2))
+    it("uses stable 55-percent experience growth from 150 XP", function()
+        assert.are.equal(150, Scaling.RequiredXP(1))
+        assert.are.equal(232, Scaling.RequiredXP(2))
+        assert.are.equal(360, Scaling.RequiredXP(3))
     end)
 
     it("grows player health, mana, attack, and defense at level-up", function()
@@ -71,7 +72,7 @@ describe("Early run progression", function()
             require("data.weapons").Get("greatsword")
         )
 
-        assert.are.equal(24, result.damage)
+        assert.are.equal(10, result.damage)
     end)
 
     it("caps player level at three before wave ten", function()
@@ -138,23 +139,41 @@ describe("Early run progression", function()
         assert.is_true(enemy.maxHp >= before)
     end)
 
-    it("opens Tier 2 only after wins with every Tier 1 charm", function()
+    it("uses type, category, and wave bands for gold pools", function()
+        local normal = Scaling.GoldReward("slime", 5, "normal")
+        local elite = Scaling.GoldReward("slime", 5, "elite")
+        local heavy = Scaling.GoldReward("heavy_slime", 15, "normal")
+
+        assert.is_true(normal >= 20 and normal <= 35)
+        assert.is_true(elite >= 30)
+        assert.is_true(heavy >= 74)
+    end)
+
+    it("opens one random Tier 2 charm after a Tier 1 win", function()
         local player = Player.Create("Tester")
-        player.completedCharms = { lucky = true, vampiric = true }
+        player.completedCharms = { lucky = true }
         require("systems.progression").OnVictory(player)
 
-        local hasExchange = false
+        local tierTwoUnlocked = 0
         for _, id in ipairs(player.unlockedCharms or {}) do
-            if id == "exchange" then hasExchange = true end
+            if id == "exchange" or id == "challenge" or id == "pacifist" or id == "violent" then
+                tierTwoUnlocked = tierTwoUnlocked + 1
+            end
         end
-        assert.is_false(hasExchange)
+        assert.are.equal(1, tierTwoUnlocked)
+    end)
 
-        player.completedCharms.magic = true
+    it("opens all Tier 2 charms after wins with every Tier 1 charm", function()
+        local player = Player.Create("Tester")
+        player.completedCharms = { lucky = true, vampiric = true, magic = true }
         require("systems.progression").OnVictory(player)
-        hasExchange = false
+
+        local tierTwoUnlocked = 0
         for _, id in ipairs(player.unlockedCharms or {}) do
-            if id == "exchange" then hasExchange = true end
+            if id == "exchange" or id == "challenge" or id == "pacifist" or id == "violent" then
+                tierTwoUnlocked = tierTwoUnlocked + 1
+            end
         end
-        assert.is_true(hasExchange)
+        assert.are.equal(4, tierTwoUnlocked)
     end)
 end)

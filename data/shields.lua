@@ -75,7 +75,7 @@ Shields.Data = {
         stats = "+250% DEF | +15% HP Gain after block",
         defenseMultiplier = 3.5,
         hpBonus = 15,
-        price = 25000
+        price = 10000
     },
     monk_counter_stance = {
         id = "monk_counter_stance",
@@ -84,7 +84,7 @@ Shields.Data = {
         stats = "+300% DEF | Counter | Mana Gain",
         defenseMultiplier = 4,
         counter = true,
-        price = 60000
+        price = 15000
     },
     glorious_spiritual_field = {
         id = "glorious_spiritual_field",
@@ -93,7 +93,7 @@ Shields.Data = {
         stats = "+1900% DEF | 50% Reflect",
         defenseMultiplier = 20,
         reflectPercent = 0.5,
-        price = 250000
+        price = 15000
     }
 }
 

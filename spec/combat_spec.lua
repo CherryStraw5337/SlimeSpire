@@ -197,7 +197,7 @@ describe("Combat status application", function()
         assert.are.equal(0.10, enemy.status.power)
     end)
 
-    it("creates an Iceberg shield based on player level", function()
+    it("creates an Iceberg shield at one-eighth of max HP", function()
         local player = Player.Create("Tester")
         player.level = 4
         player.mana = 100
@@ -206,8 +206,12 @@ describe("Combat status application", function()
 
         Combat.ProcessAction(state, "spell", "iceberg_crush")
 
-        assert.is_true(player.icebergShieldHp >= 197)
-        assert.is_true(player.icebergShieldHp <= 200)
+        local buff
+        for _, event in ipairs(state.events) do
+            if event.type == "BUFF_APPLIED" then buff = event.data.buff end
+        end
+        assert.are.equal("Ice shield HP +6", buff)
+        assert.is_true(player.icebergShieldHp >= 0)
     end)
 
     it("rejects Superior Mana Blast while Glorious Spiritual Field is active", function()

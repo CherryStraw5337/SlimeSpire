@@ -3,7 +3,8 @@ local Status = {}
 local function ApplyTimed(target, type, duration, power, source)
     target.statuses = target.statuses or {}
     target.statusImmunity = target.statusImmunity or {}
-    if target.statuses[type] or (target.statusImmunity[type] or 0) > 0 then
+    if next(target.statuses) ~= nil then return false end
+    if (target.statusImmunity[type] or 0) > 0 then
         return false
     end
     local status = {

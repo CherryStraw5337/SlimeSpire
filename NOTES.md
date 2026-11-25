@@ -30,7 +30,7 @@ header-includes:
   - '\usepackage{microtype}'
 ---
 
-> **CURRENT SOURCE GUIDE**  
+> **CURRENT SOURCE GUIDE**
 > This guide reflects the current source snapshot. Some fixes are present in code but still need confirmation in a packaged playtest build.
 
 ## The Run
@@ -71,13 +71,15 @@ Player levels increase base stats. The first completed run unlocks the initial c
 
 The current source includes a campfire route back to save-slot selection, a separate player level display, charm text in the campfire status, and a victory scene. The Leafy Brew and Rooted Beating crash reports were caused by callback calls that have since been changed. These source-level fixes still need playtesting.
 
-## macOS
+## Platform notes
 
-Launch the packaged `.app`. If Gatekeeper blocks it, Control-click the app, choose **Open**, and confirm. LÖVE stores this game's data under:
+Launch the packaged build for Windows or macOS. On macOS, if Gatekeeper blocks the `.app`, Control-click it, choose **Open**, and confirm.
+
+Save locations are platform-specific. The game uses its LÖVE save directory for slots and player progress. On macOS this is typically:
 
 `~/Library/Application Support/LOVE/SlimeSpire/`
 
-Save slots are in the `saves` subfolder. Confirm the exact path and save/load persistence in a packaged macOS build.
+Save slots are in the `saves` subfolder. Confirm the exact path and save/load persistence in every packaged build.
 
 ## Open Work
 

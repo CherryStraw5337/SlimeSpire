@@ -43,7 +43,7 @@ local function CheckCombatEnd()
         local wonGame = HandleVictory(Game.player)
         SaveSystem.Save(Game.currentSaveSlot, Game.player)
         Game.sceneManager:Switch(wonGame and "victory" or "menu")
-        
+
     -- Fleeing now triggers the exact same run-wipe penalty as dying!
     elseif result == "defeat" or result == "flee" then
         Progression.OnLoss(Game.player)
@@ -52,11 +52,14 @@ local function CheckCombatEnd()
     end
 end
 
-function CombatScene:load() self.submode = "main" end
+function CombatScene:load()
+    self.submode = "main"
+    self.spellPage = 0
+end
 
 function CombatScene:draw()
     if self.submode == "main" then CombatUI.Render(Game.state.combat.state)
-    elseif self.submode == "spells" then CombatUI.RenderSpells(Game.player)
+    elseif self.submode == "spells" then CombatUI.RenderSpells(Game.player, self.spellPage)
     elseif self.submode == "potions" then CombatUI.RenderPotions(Game.player)
     elseif self.submode == "flee_confirm" then
         CombatUI.Render(Game.state.combat.state)
@@ -85,7 +88,13 @@ function CombatScene:keypressed(key)
 
         if action then Combat.ProcessAction(Game.state.combat.state, action); CheckCombatEnd() end
     elseif self.submode == "spells" then
-        if key == "0" or key == "escape" then self.submode = "main" else
+        if key == "0" or key == "escape" then
+            self.submode = "main"
+        elseif key == "[" then
+            self.spellPage = math.max(0, self.spellPage - 1)
+        elseif key == "]" then
+            self.spellPage = self.spellPage + 1
+        else
             local choice = tonumber(key)
             if choice then
                 local ids = {}
@@ -107,8 +116,9 @@ function CombatScene:keypressed(key)
                     local spellB = require("data.spells").Get(b)
                     return (spellA and spellA.name or a) < (spellB and spellB.name or b)
                 end)
-                if ids[choice] then
-                    Combat.ProcessAction(Game.state.combat.state, "spell", ids[choice])
+                local actualChoice = self.spellPage * 9 + choice
+                if ids[actualChoice] then
+                    Combat.ProcessAction(Game.state.combat.state, "spell", ids[actualChoice])
                     CheckCombatEnd()
                     self.submode = "main"
                 end

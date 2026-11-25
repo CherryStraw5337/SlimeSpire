@@ -130,7 +130,7 @@ local function EnemyTurn(state)
             if enemy.hp <= 0 then return Victory(state) end
         end
     end
-    
+
     if enemy.element == "fire" then
         if math.random(1, 100) <= 25 then
             ApplyStatus(state, player, "burn", 0.10)
@@ -250,7 +250,9 @@ local function CastSpell(state, spellId)
         end
     end
 
-    if player.mana < (spell.minMana or spell.manaCost) then
+    local effectiveManaCost = spell.manaCost
+    if player.magicManaMultiplier then effectiveManaCost = math.ceil(effectiveManaCost * player.magicManaMultiplier) end
+    if player.mana < (spell.minMana or effectiveManaCost) then
         Push(state, "NOT_ENOUGH_MANA", { spell = spell.name })
         return
     end
@@ -356,7 +358,7 @@ local function Defend(state)
     player.defending = false
 
     if state.finished or player.hp <= 0 then return end
-    local shield = Shield(player)
+    shield = Shield(player)
     if shield and (shield.manaBonus or 0) > 0 then
         local manaGain = math.floor(player.maxMana * shield.manaBonus / 100)
         player.mana = math.min(player.maxMana, player.mana + manaGain)

@@ -16,7 +16,7 @@ function InventoryUI.RenderCategory(title, items, page)
     local y = 50
     local spacing = 20
     love.graphics.print("--- " .. string.upper(title) .. " ---", 50, y); y = y + spacing * 2
-    
+
     if #items == 0 then
         love.graphics.print("Empty.", 50, y); y = y + spacing
     else
@@ -25,7 +25,7 @@ function InventoryUI.RenderCategory(title, items, page)
         for i = startIndex, endIndex do
             local item = items[i]
             local equipped = item.equipped and " [EQUIPPED]" or ""
-            love.graphics.print(i .. ". " .. item.name .. equipped, 50, y); y = y + spacing
+            love.graphics.print((i - startIndex + 1) .. ". " .. item.name .. equipped, 50, y); y = y + spacing
             love.graphics.print("   " .. (item.description or "No description."), 50, y); y = y + spacing
             if item.damageMultiplier then
                 love.graphics.print("   Multiplier: x" .. item.damageMultiplier, 50, y); y = y + spacing
@@ -42,7 +42,7 @@ function InventoryUI.RenderPotions(potionsList, message, page)
     local y = 50
     local spacing = 20
     love.graphics.print("--- POTIONS ---", 50, y); y = y + spacing * 2
-    
+
     if #potionsList == 0 then
         love.graphics.print("None.", 50, y); y = y + spacing
     else
@@ -50,7 +50,8 @@ function InventoryUI.RenderPotions(potionsList, message, page)
         local startIndex = page * 9 + 1
         local endIndex = math.min(#potionsList, startIndex + 8)
         for i = startIndex, endIndex do
-            local pot = potionsList[i]            love.graphics.print(i .. ". " .. pot.name .. " (x" .. pot.amount .. ")", 50, y); y = y + spacing
+            local pot = potionsList[i]
+            love.graphics.print((i - startIndex + 1) .. ". " .. pot.name .. " (x" .. pot.amount .. ")", 50, y); y = y + spacing
         end
     end
     y = y + spacing
@@ -65,10 +66,11 @@ function InventoryUI.RenderSpells(spells, page)
     local startIndex = page * 9 + 1
     local endIndex = math.min(#spells, startIndex + 8)
     for i = startIndex, endIndex do
-        local spell = spells[i]        love.graphics.print(i .. ". " .. spell.name .. " (" .. spell.manaCost .. " MP)", 50, y); y = y + 20
+        local spell = spells[i]
+        love.graphics.print((i - startIndex + 1) .. ". " .. spell.name .. " (" .. spell.manaCost .. " MP)", 50, y); y = y + 20
         love.graphics.print("   " .. (spell.description or "No description."), 50, y); y = y + 20
     end
-    love.graphics.print("Press a number to move that spell up. [/] to page. Left/Right rotates sections. 0 to go back.", 50, y + 20)
+    love.graphics.print("Press a number to move up. + moves down. - moves up. [/] page.", 50, y + 20)
 end
 
 function InventoryUI.RenderDetail(item)

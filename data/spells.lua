@@ -3,12 +3,12 @@ local Spells = {}
 local function CalculateDamage(player, enemy, baseDamage)
     -- Hook into 'atk' so your spell power grows as you level up!
     local magicPower = player.magic or player.atk or 1
-    local enemyResist = enemy.def or 1 
-    
+    local enemyResist = enemy.def or 1
+
     -- The spell's base damage now multiplies based on your power level
     -- (e.g., 15% stronger for every point of magicPower)
     local scaledDamage = baseDamage * (1 + (magicPower * 0.15))
-    
+
     local damage = math.floor(scaledDamage - enemyResist)
     return math.max(1, damage) -- Guarantees at least 1 damage
 end
@@ -34,13 +34,13 @@ Spells.List = {
         end
     },
     icicle_rush = {
-        id = "icicle_rush", name = "Icicle Rush", manaCost = 10, price = 400,
+        id = "icicle_rush", name = "Icicle Rush", manaCost = 10, price = 4500,
         flavour = "Razor-sharp shards of ice materialize in the air.",
         cast = function(player, enemy, pushEvent)
-            local hits = math.random(1, 10)
+            local hits = math.random(3, 6)
             local totalDamage = 0
-            for count = 1, hits do
-                totalDamage = totalDamage + CalculateDamage(player, enemy, 15)
+            for _ = 1, hits do
+                totalDamage = totalDamage + CalculateDamage(player, enemy, 12)
             end
             enemy.hp = math.max(0, enemy.hp - totalDamage)
             pushEvent("SPELL_CAST", { spell = "Icicle Rush", damage = totalDamage, text = hits .. " ice shards puncture your enemy!" })
@@ -86,14 +86,14 @@ Spells.List = {
         end
     },
     iceberg_crush = {
-        id = "iceberg_crush", name = "Iceberg Crush", manaCost = 20, price = 1200,
+        id = "iceberg_crush", name = "Iceberg Crush", manaCost = 20, price = 750,
         flavour = "A colossal block of ice crashes down, shielding you.",
         cast = function(player, enemy, pushEvent)
             local damage = CalculateDamage(player, enemy, 30)
             enemy.hp = math.max(0, enemy.hp - damage)
-            player.icebergShieldHp = (player.icebergShieldHp or 0) + ((player.level or 1) * 50)
+            player.icebergShieldHp = math.floor((player.maxHp or 50) / 8)
             pushEvent("SPELL_CAST", { spell = "Iceberg Crush", damage = damage, text = "The shattered ice forms a protective barrier around you." })
-            pushEvent("BUFF_APPLIED", { buff = "Ice shield HP +" .. ((player.level or 1) * 50) })
+            pushEvent("BUFF_APPLIED", { buff = "Ice shield HP +" .. math.floor((player.maxHp or 50) / 8) })
         end
     },
     spiky_cannon = {
@@ -135,10 +135,10 @@ Spells.List = {
         end
     },
     frozen_barrage = {
-        id = "frozen_barrage", name = "Frozen Barrage", manaCost = 60, price = 3500,
+        id = "frozen_barrage", name = "Frozen Barrage", manaCost = 60, price = 2500,
         flavour = "A relentless hailstorm turns the battlefield into a tundra.",
         cast = function(player, enemy, pushEvent)
-            local damage = CalculateDamage(player, enemy, 70)
+            local damage = CalculateDamage(player, enemy, 50)
             enemy.hp = math.max(0, enemy.hp - damage)
             pushEvent("SPELL_CAST", { spell = "Frozen Barrage", damage = damage, text = "A violent blizzard engulfs the enemy." })
             pushEvent("STATUS_APPLIED", { enemy = enemy.name, status = "hail", power = 0.10 })
