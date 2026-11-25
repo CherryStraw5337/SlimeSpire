@@ -13,7 +13,11 @@ local function Grow(current, scale)
 end
 
 function Scaling.RequiredXP(level)
-    return math.floor(Constants.Progression.XP_BASE * (Constants.Progression.XP_SCALE ^ (level - 1)))
+    local required = 9
+    for _ = 2, math.max(1, level) do
+        required = required ^ 3
+    end
+    return math.floor(required)
 end
 
 function Scaling.CanLevel(player, wave)
